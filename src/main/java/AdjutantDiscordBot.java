@@ -13,12 +13,16 @@ import discord4j.core.object.entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AdjutantDiscordBot {
     private static final Logger log = LoggerFactory.getLogger(AdjutantDiscordBot.class);
     private static final String prefix = ">";
+
+    private ArrayList<Message> selfMessages;
 
     public static void main(String[] args) {
         DiscordClient client = new DiscordClientBuilder(args[0]).build();
@@ -54,6 +58,7 @@ public class AdjutantDiscordBot {
     }
 
     private void onMessageReceived(MessageCreateEvent event) {
+        selfMessages = new ArrayList<>();
         Message message = event.getMessage();
 
         message.getContent().ifPresent(it -> {
@@ -69,20 +74,30 @@ public class AdjutantDiscordBot {
                 } else if ((prefix + "joinme").equals(command[0])) {
                     joinVoice((TextChannel) channel, message.getAuthorAsMember().block());
 
-                } else if ((prefix + "sleep").equals(command[0])) {
+                } else if ((prefix + "quit").equals(command[0])) {
                     disconnectVoice((TextChannel) channel);
                 } else if ((prefix + "pause").equals(command[0])){
                     getGuildAudioPlayer(((TextChannel) channel).getGuild().block()).player.setPaused(!(getGuildAudioPlayer(((TextChannel) channel).getGuild().block()).player.isPaused()));
                 } else if (((prefix + "volume").equals(command[0]) || (prefix + "v").equals(command[0])) && command.length > 1){
                     getGuildAudioPlayer(((TextChannel) channel).getGuild().block()).player.setVolume(Integer.valueOf(command[1]));
                 }
+
+                if(command[0].startsWith(">")) {
+                    message.delete().delaySubscription(Duration.ofMillis(2000)).blockOptional();
+                }
+
+                for(Message mes : selfMessages){
+                    System.out.println(mes.delete().delaySubscription(Duration.ofMillis(2000)).blockOptional());
+                }
             }
         });
     }
 
     private void disconnectVoice(TextChannel channel){
-        sendMessageToChannel(channel, "Noot noot");
-        getGuildAudioPlayer(channel.getGuild().block()).player.destroy();
+        sendTempMessageToChannel(channel, "Noot noot");
+        channel.getGuild().block().getClient().logout().block();
+//        getGuildAudioPlayer(channel.getGuild().block()).player.removeListener(getGuildAudioPlayer(channel.getGuild().block()).scheduler);
+//        getGuildAudioPlayer(channel.getGuild().block()).player.checkCleanup(100);
     }
 
     private void joinVoice(TextChannel channel, Member member) {
@@ -90,9 +105,8 @@ public class AdjutantDiscordBot {
         GuildMusicManager manager = getGuildAudioPlayer(guild);
 
         VoiceChannel voiceChannel = member.getVoiceState().block().getChannel().block();
-        sendMessageToChannel(channel, "Joining channel: " + voiceChannel.getName());
+        sendTempMessageToChannel(channel, "Joining channel: " + voiceChannel.getName());
         voiceChannel.join(spec -> spec.setProvider(manager.provider)).block();
-//        VoiceChannel voiceChannel = guild.getVoiceStates().any(voiceState -> guild.getClient().getMemberById(member.getId()).block());
     }
 
     private void loadAndPlay(TextChannel channel, final String trackUrl) {
@@ -101,7 +115,7 @@ public class AdjutantDiscordBot {
         playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                sendMessageToChannel(channel, "Adding to queue " + track.getInfo().title);
+                sendTempMessageToChannel(channel, "Adding to queue " + track.getInfo().title);
 
                 play(channel.getGuild().block(), musicManager, track);
             }
@@ -114,19 +128,19 @@ public class AdjutantDiscordBot {
                     firstTrack = playlist.getTracks().get(0);
                 }
 
-                sendMessageToChannel(channel, "Adding to queue " + firstTrack.getInfo().title + " (first track of playlist " + playlist.getName() + ")");
+                sendTempMessageToChannel(channel, "Adding to queue " + firstTrack.getInfo().title + " (first track of playlist " + playlist.getName() + ")");
 
                 play(channel.getGuild().block(), musicManager, firstTrack);
             }
 
             @Override
             public void noMatches() {
-                sendMessageToChannel(channel, "Nothing found by " + trackUrl);
+                sendTempMessageToChannel(channel, "Nothing found by " + trackUrl);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                sendMessageToChannel(channel, "Could not play: " + exception.getMessage());
+                sendTempMessageToChannel(channel, "Could not play: " + exception.getMessage());
             }
         });
     }
@@ -141,14 +155,29 @@ public class AdjutantDiscordBot {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild().block());
         musicManager.scheduler.nextTrack();
 
-        sendMessageToChannel(channel, "Skipped to next track.");
+        sendTempMessageToChannel(channel, "Skipped to next track.");
+    }
+
+    private void sendTempMessageToChannel(TextChannel channel, String message) {
+        try {
+            selfMessages.add(channel.createMessage(message).block());
+        } catch (Exception e) {
+            log.warn("Failed to send message {} to {}", message, channel.getName(), e);
+        }
     }
 
     private void sendMessageToChannel(TextChannel channel, String message) {
-        try {
+        try{
             channel.createMessage(message).block();
         } catch (Exception e) {
             log.warn("Failed to send message {} to {}", message, channel.getName(), e);
+        }
+    }
+
+    private void removeMessageFromChannel(TextChannel channel, String messageIDs) {
+        try {
+        } catch (Exception e) {
+            log.warn("Failed to remove message {} from {}", messageIDs, channel.getName(), e);
         }
     }
 
