@@ -11,11 +11,12 @@ import discord4j.core.DiscordClientBuilder
 import discord4j.core.`object`.entity.*
 import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.message.MessageCreateEvent
+import me.liranai.adjutant.config.AdjutantConfig
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
-class AdjutantDiscordBot private constructor() {
+class AdjutantDiscordBot(private val config: AdjutantConfig) {
 
     private val selfMessages: MutableList<Message> = mutableListOf()
 
@@ -27,7 +28,7 @@ class AdjutantDiscordBot private constructor() {
         AudioSourceManagers.registerLocalSource(playerManager)
     }
 
-    private fun registerListeners(eventDispatcher: EventDispatcher) {
+    fun registerListeners(eventDispatcher: EventDispatcher) {
         eventDispatcher.on(MessageCreateEvent::class.java).subscribe{ event -> this.onMessageReceived(event) }
     }
 
@@ -54,23 +55,23 @@ class AdjutantDiscordBot private constructor() {
             if (channel is TextChannel) {
                 val command = it.split(" ".toRegex(), 2)
 
-                if (prefix + "play" == command[0] && command.size == 2) {
+                if (config.prefix + "play" == command[0] && command.size == 2) {
                     loadAndPlay(channel, command[1])
-                } else if (prefix + "skip" == command[0]) {
+                } else if (config.prefix + "skip" == command[0]) {
                     skipTrack(channel)
-                } else if (prefix + "joinme" == command[0]) {
+                } else if (config.prefix + "joinme" == command[0]) {
                     message.authorAsMember.block()?.let { author ->
                             joinVoice(channel, author)
                     }
-                } else if (prefix + "quit" == command[0]) {
+                } else if (config.prefix + "quit" == command[0]) {
                     disconnectVoice(channel)
-                } else if (prefix + "pause" == command[0]) {
+                } else if (config.prefix + "pause" == command[0]) {
                     getGuildAudioPlayer(channel.guild.block()!!).player.isPaused = !getGuildAudioPlayer(channel.guild.block()!!).player.isPaused
-                } else if ((prefix + "volume" == command[0] || prefix + "v" == command[0]) && command.size > 1) {
+                } else if ((config.prefix + "volume" == command[0] || config.prefix + "v" == command[0]) && command.size > 1) {
                     getGuildAudioPlayer(channel.guild.block()!!).player.volume = Integer.valueOf(command[1])
                 }
 
-                if (command[0].startsWith(">")) {
+                if (command[0].startsWith(config.prefix)) {
                     message.delete().delaySubscription(Duration.ofMillis(2000)).blockOptional()
                 }
 
@@ -177,29 +178,6 @@ class AdjutantDiscordBot private constructor() {
 
     companion object {
         private val log = LoggerFactory.getLogger(AdjutantDiscordBot::class.java)
-        private val prefix = ">"
-        private val ownerIds = mutableListOf<String>()
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            var googleApiSecret = ""
-
-            if(args.size >= 2){
-                for(i in 2 until args.size) {
-                    ownerIds += args[i]
-                }
-            }
-
-            if(args.isNotEmpty()) {
-                googleApiSecret = args[1]
-
-                val client = DiscordClientBuilder(args[0]).build()
-                AdjutantDiscordBot().registerListeners(client.eventDispatcher)
-
-
-                client.login().block()
-            }
-        }
 
         fun attachToFirstVoiceChannel(guild: Guild, provider: LavaPlayerAudioProvider) {
             val voiceChannel = guild.channels.ofType(VoiceChannel::class.java).blockFirst() ?: TODO("Error Handling")
