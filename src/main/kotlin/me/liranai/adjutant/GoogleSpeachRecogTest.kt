@@ -22,7 +22,7 @@ class TryGoogleSpeechRecognitionSimple : GSpeechResponseListener {
         fun main(args: Array<String>) {
             val mic = Microphone(FLACFileWriter.FLAC)
             // You have to make your own GOOGLE_API_KEY
-            val duplex = GSpeechDuplex("AIzaSyDfL6x8jRB_4Gq2gX0TBcG-zmNutDLsX-8")
+            val duplex = GSpeechDuplex(args[1])
 
             duplex.language = "en"
 

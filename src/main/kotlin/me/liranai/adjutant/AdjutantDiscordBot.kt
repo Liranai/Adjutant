@@ -178,12 +178,27 @@ class AdjutantDiscordBot private constructor() {
     companion object {
         private val log = LoggerFactory.getLogger(AdjutantDiscordBot::class.java)
         private val prefix = ">"
+        private val ownerIds = mutableListOf<String>()
 
         @JvmStatic
         fun main(args: Array<String>) {
-            val client = DiscordClientBuilder(args[0]).build()
-            AdjutantDiscordBot().registerListeners(client.eventDispatcher)
-            client.login().block()
+            var googleApiSecret = ""
+
+            if(args.size >= 2){
+                for(i in 2 until args.size) {
+                    ownerIds += args[i]
+                }
+            }
+
+            if(args.isNotEmpty()) {
+                googleApiSecret = args[1]
+
+                val client = DiscordClientBuilder(args[0]).build()
+                AdjutantDiscordBot().registerListeners(client.eventDispatcher)
+
+
+                client.login().block()
+            }
         }
 
         fun attachToFirstVoiceChannel(guild: Guild, provider: LavaPlayerAudioProvider) {
