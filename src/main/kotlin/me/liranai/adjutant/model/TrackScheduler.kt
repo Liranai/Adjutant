@@ -1,4 +1,4 @@
-package me.liranai.adjutant
+package me.liranai.adjutant.model
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
