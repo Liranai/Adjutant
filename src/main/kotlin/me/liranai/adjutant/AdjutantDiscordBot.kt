@@ -7,11 +7,12 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import discord4j.core.DiscordClientBuilder
 import discord4j.core.`object`.entity.*
 import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.message.MessageCreateEvent
 import me.liranai.adjutant.config.AdjutantConfig
+import me.liranai.adjutant.model.GuildMusicManager
+import me.liranai.adjutant.model.LavaPlayerAudioProvider
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
