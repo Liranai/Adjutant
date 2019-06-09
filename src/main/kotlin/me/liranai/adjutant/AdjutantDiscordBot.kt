@@ -11,11 +11,13 @@ import discord4j.core.`object`.entity.*
 import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.message.MessageCreateEvent
 import me.liranai.adjutant.config.AdjutantConfig
+import me.liranai.adjutant.model.AdjutantRecognition
 import me.liranai.adjutant.model.GuildMusicManager
 import me.liranai.adjutant.model.LavaPlayerAudioProvider
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import javax.swing.Timer
 
 class AdjutantDiscordBot(private val config: AdjutantConfig) {
 
@@ -24,9 +26,17 @@ class AdjutantDiscordBot(private val config: AdjutantConfig) {
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: MutableMap<Long, GuildMusicManager> = ConcurrentHashMap()
 
+    private var old_text: String = ""
+    var timer = Timer(2000) { ae ->
+        println("PING")
+        println("TO SAY: " + old_text)
+    }
+
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
+
+        val adjutant = AdjutantRecognition(config.security.tokens.google)
     }
 
     fun registerListeners(eventDispatcher: EventDispatcher) {
@@ -47,6 +57,7 @@ class AdjutantDiscordBot(private val config: AdjutantConfig) {
     }
 
     private fun onMessageReceived(event: MessageCreateEvent) {
+        timer.start()
         selfMessages.clear()
         val message = event.message
 
