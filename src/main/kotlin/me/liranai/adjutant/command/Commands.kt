@@ -55,11 +55,6 @@ class Commands(private val bot: AdjutantDiscordBot) {
         }
     }
 
-    private fun volumeWrapper(details: CommandDetails) {
-        assertArgs(details, 1) {
-            volume(it.channel, it.args[0].toInt())
-        }
-    }
 
     fun build(prefix: String): SimpleCommandManager {
         return SimpleCommandManager.Builder()
@@ -74,8 +69,11 @@ class Commands(private val bot: AdjutantDiscordBot) {
             .withCommand("joinme") { joinMe(it.message, it.channel) }
             .withCommand("quit") { quit(it.channel) }
             .withCommand("pause") { pause(it.channel) }
-            .withCommand("volume", this::volumeWrapper)
-            .withCommand("v", this::volumeWrapper)
+            .withCommand("volume", "v") { details ->
+                assertArgs(details, 1) {
+                    volume(it.channel, it.args[0].toInt())
+                }
+            }
             .build()
     }
 }

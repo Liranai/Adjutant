@@ -1,6 +1,3 @@
-import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 buildscript {
     repositories {
         jcenter()
@@ -40,7 +37,7 @@ dependencies {
     implementation("edu.cmu.sphinx", "sphinx4-core", "5prealpha-SNAPSHOT")
     implementation("edu.cmu.sphinx", "sphinx4-data", "5prealpha-SNAPSHOT")
     implementation("com.github.goxr3plus:java-google-speech-api:8.0.0")
-    implementation("com.github.elizabethlfransen:discord-command-framework:1.0")
+    implementation("com.github.elizabethlfransen:discord-command-framework:1.0.1")
 }
 
 configure<JavaPluginConvention> {
