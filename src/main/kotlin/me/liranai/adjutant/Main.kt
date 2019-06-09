@@ -2,10 +2,8 @@ package me.liranai.adjutant
 
 import com.charleskorn.kaml.Yaml
 import discord4j.core.DiscordClientBuilder
-import kotlinx.serialization.parse
 import me.liranai.adjutant.config.AdjutantConfig
 import java.io.FileNotFoundException
-import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -20,7 +18,8 @@ fun main() {
     }
     val bot = AdjutantDiscordBot(config)
     val client = DiscordClientBuilder(config.security.tokens.discord).build()
-    bot.registerListeners(client.eventDispatcher)
+    val listener = EventListener(bot, config.prefix)
+    listener.registerEvents(client.eventDispatcher)
     client.login().block()
 }
 

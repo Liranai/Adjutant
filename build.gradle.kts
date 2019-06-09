@@ -37,9 +37,10 @@ dependencies {
     implementation("com.discord4j:discord4j-core:3.0.6")
     testCompile("junit", "junit", "4.12")
     implementation("com.sedmelluq:lavaplayer:1.3.17")
-    implementation ("com.github.goxr3plus:java-google-speech-api:8.0.0")
     implementation("edu.cmu.sphinx", "sphinx4-core", "5prealpha-SNAPSHOT")
     implementation("edu.cmu.sphinx", "sphinx4-data", "5prealpha-SNAPSHOT")
+    implementation("com.github.goxr3plus:java-google-speech-api:8.0.0")
+    implementation("com.github.elizabethlfransen:discord-command-framework:1.0")
 }
 
 configure<JavaPluginConvention> {
