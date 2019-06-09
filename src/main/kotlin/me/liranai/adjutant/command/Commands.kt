@@ -4,10 +4,13 @@ import com.github.elizabethlfransen.discord.command.CommandDetails
 import com.github.elizabethlfransen.discord.command.CommandExecutor
 import com.github.elizabethlfransen.discord.command.SimpleCommandManager
 import discord4j.core.`object`.entity.Guild
+import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.TextChannel
+import kotlinx.io.InputStream
 import me.liranai.adjutant.AdjutantDiscordBot
 import me.liranai.adjutant.util.sendTempMessage
+import java.io.File
 
 class Commands(private val bot: AdjutantDiscordBot) {
     private val Guild.audioPlayer

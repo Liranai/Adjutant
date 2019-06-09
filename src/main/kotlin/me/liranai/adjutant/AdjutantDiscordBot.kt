@@ -19,7 +19,7 @@ import me.liranai.adjutant.util.sendTempMessage
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
-class AdjutantDiscordBot(private val config: AdjutantConfig) {
+class AdjutantDiscordBot(val config: AdjutantConfig) {
 
     private val playerManager: AudioPlayerManager = DefaultAudioPlayerManager()
     private val musicManagers: MutableMap<Long, GuildMusicManager> = ConcurrentHashMap()
@@ -110,7 +110,6 @@ class AdjutantDiscordBot(private val config: AdjutantConfig) {
 
         channel.sendTempMessage("Skipped to next track.")
     }
-
 
     companion object {
         private val log = LoggerFactory.getLogger(AdjutantDiscordBot::class.java)

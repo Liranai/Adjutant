@@ -25,7 +25,7 @@ class AdjutantRecognition(GAPI: String) {
     }
 
     init {
-        duplex.language = "en-GB"
+        duplex.language = "en-US"
 
         thread(start = true) {
             println("${Thread.currentThread()} has started.")
