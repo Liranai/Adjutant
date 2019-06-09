@@ -4,6 +4,7 @@ import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.TextChannel
 import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.message.MessageCreateEvent
+import me.liranai.adjutant.util.sendTempMessage
 import java.time.Duration
 import javax.swing.Timer
 
@@ -34,7 +35,9 @@ class EventListener(private val bot: AdjutantDiscordBot, private val prefix: Str
             if (channel is TextChannel) {
                 val command = it.split(" ".toRegex(), 2)
                 var handled = true
-                if (prefix + "play" == command[0] && command.size == 2) {
+                if (prefix + "ping" == command[0]) {
+                    channel.sendTempMessage("Pong!")
+                } else if (prefix + "play" == command[0] && command.size == 2) {
                     bot.loadAndPlay(channel, command[1])
                 } else if (prefix + "skip" == command[0]) {
                     bot.skipTrack(channel)
