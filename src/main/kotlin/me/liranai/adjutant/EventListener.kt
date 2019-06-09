@@ -1,15 +1,17 @@
 package me.liranai.adjutant
 
+import com.github.elizabethlfransen.discord.command.CommandManager
+import com.github.elizabethlfransen.discord.command.event.CommandPostExecutedEvent
 import discord4j.core.`object`.entity.Guild
-import discord4j.core.`object`.entity.TextChannel
 import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.message.MessageCreateEvent
-import me.liranai.adjutant.util.sendTempMessage
+import me.liranai.adjutant.command.Commands
 import java.time.Duration
 import javax.swing.Timer
 
-class EventListener(private val bot: AdjutantDiscordBot, private val prefix: String) {
+class EventListener(private val bot: AdjutantDiscordBot, prefix: String) {
     private var old_text: String = ""
+    private val commandManager: CommandManager = Commands(bot).build(prefix)
     var timer = Timer(2000) {
         println("PING")
         println("TO SAY: $old_text")
@@ -23,42 +25,17 @@ class EventListener(private val bot: AdjutantDiscordBot, private val prefix: Str
      */
     fun registerEvents(eventDispatcher: EventDispatcher) {
         eventDispatcher.on(MessageCreateEvent::class.java).subscribe(this::onMessageReceived)
+        eventDispatcher.on(CommandPostExecutedEvent::class.java).subscribe(this::onPostCommand)
+
     }
 
     private fun onMessageReceived(event: MessageCreateEvent) {
         timer.start()
-        val message = event.message
+        commandManager.handle(event)
+    }
 
-        message.content.ifPresent {
-            val channel = message.channel.block()
-
-            if (channel is TextChannel) {
-                val command = it.split(" ".toRegex(), 2)
-                var handled = true
-                if (prefix + "ping" == command[0]) {
-                    channel.sendTempMessage("Pong!")
-                } else if (prefix + "play" == command[0] && command.size == 2) {
-                    bot.loadAndPlay(channel, command[1])
-                } else if (prefix + "skip" == command[0]) {
-                    bot.skipTrack(channel)
-                } else if (prefix + "joinme" == command[0]) {
-                    message.authorAsMember.block()?.let { author -> bot.joinVoice(channel, author) }
-                } else if (prefix + "quit" == command[0]) {
-                    bot.disconnectVoice(channel)
-                } else if (prefix + "pause" == command[0]) {
-                    channel.guild.block()?.audioPlayer?.player?.apply {
-                        isPaused = !isPaused
-                    }
-                } else if ((prefix + "volume" == command[0] || prefix + "v" == command[0]) && command.size > 1) {
-                    channel.guild.block()?.audioPlayer?.player?.volume = command[1].toInt()
-                } else {
-                    handled = false
-                }
-                if (handled) {
-                    message.delete().delaySubscription(Duration.ofMillis(2000)).blockOptional()
-                }
-            }
-        }
+    private fun onPostCommand(event: CommandPostExecutedEvent) {
+        event.details.message.delete().delaySubscription(Duration.ofSeconds(2)).subscribe()
     }
 
 
